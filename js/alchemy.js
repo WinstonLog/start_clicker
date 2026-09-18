@@ -39,13 +39,12 @@ function renderInventory() {
     container.innerHTML = ids.map(id => {
         const card = getCard(id);
         const tier = getTierInfo(card.tier);
-        const svg = getCardArt(id, 60);
         return `
             <div class="inventory-card"
                  style="--tier-color:${tier.color}; --tier-glow:${tier.glow}"
                  onclick="pickFromInventory('${id}')">
                 <div class="inventory-count">×${inv[id]}</div>
-                <div class="inventory-emoji">${svg}</div>
+                <div class="inventory-emoji">${card.emoji}</div>
                 <div class="inventory-name">${card.name}</div>
             </div>
         `;
@@ -92,14 +91,11 @@ function renderCollection() {
         const card = getCard(id);
         const tier = getTierInfo(card.tier);
         const isSeen = seen.has(id);
-        const art = isSeen
-            ? getCardArt(id, 60)
-            : `<div style="font-size:36px;color:#4a4f5e;">❓</div>`;
 
         return `
             <div class="collection-card ${isSeen ? '' : 'locked'}"
                  style="--tier-color:${tier.color}; --tier-glow:${tier.glow}">
-                <div class="collection-emoji">${art}</div>
+                <div class="collection-emoji">${isSeen ? card.emoji : '❓'}</div>
                 <div class="collection-name">${isSeen ? card.name : '???'}</div>
                 <div class="collection-tier" style="color:${tier.color}">${tier.name}</div>
             </div>
@@ -136,13 +132,12 @@ function openPicker(slot) {
         grid.innerHTML = ids.map(id => {
             const card = getCard(id);
             const tier = getTierInfo(card.tier);
-            const svg = getCardArt(id, 50);
             return `
                 <div class="picker-card"
                      style="--tier-color:${tier.color}"
                      onclick="selectCard('${id}')">
                     <div class="picker-card-count">×${inv[id]}</div>
-                    <div class="picker-card-emoji">${svg}</div>
+                    <div class="picker-card-emoji">${card.emoji}</div>
                     <div class="picker-card-name">${card.name}</div>
                 </div>
             `;
@@ -190,18 +185,18 @@ function renderSlots() {
             if (recipe) {
                 const resCard = getCard(recipe.result);
                 const isNew = !(state.data.seen || []).includes(recipe.result);
-                preview.innerHTML = getCardArt(recipe.result, 40);
+                preview.textContent = resCard.emoji;
                 preview.classList.add('known');
                 preview.style.filter = isNew
                     ? 'drop-shadow(0 0 20px #ffcc66)'
                     : 'drop-shadow(0 0 20px #4ad4ff)';
             } else {
-                preview.innerHTML = '❌';
+                preview.textContent = '❌';
                 preview.classList.remove('known');
                 preview.style.filter = '';
             }
         } else {
-            preview.innerHTML = '?';
+            preview.textContent = '?';
             preview.classList.remove('known');
             preview.style.filter = '';
         }
@@ -221,12 +216,11 @@ function renderSlot(el, cardId) {
 
     const card = getCard(cardId);
     const tier = getTierInfo(card.tier);
-    const svg = getCardArt(cardId, 60);
     el.classList.add('filled');
     el.style.setProperty('--slot-color', tier.color);
     el.style.setProperty('--slot-glow', tier.glow);
     el.innerHTML = `
-        <div class="lab-slot-emoji">${svg}</div>
+        <div class="lab-slot-emoji">${card.emoji}</div>
         <div class="lab-slot-name">${card.name}</div>
     `;
 }
@@ -353,6 +347,8 @@ function showMergeOverlay(data) {
         `;
     } else {
         const card = getCard(data.cardId);
+        const cardA = getCard(data.a);
+        const cardB = getCard(data.b);
         const tier = getTierInfo(card.tier);
         const isFinal = data.cardId === 'philosopher';
 
@@ -361,14 +357,12 @@ function showMergeOverlay(data) {
                 ${isFinal ? '🔮 АБСОЛЮТ ДОСТИГНУТ!' : 'Слияние успешно!'}
             </div>
             <div class="merge-formula">
-                <div style="width:60px;height:60px;">${getCardArt(data.a, 60)}</div>
+                <span>${cardA.emoji}</span>
                 <span class="arrow">+</span>
-                <div style="width:60px;height:60px;">${getCardArt(data.b, 60)}</div>
+                <span>${cardB.emoji}</span>
                 <span class="arrow">→</span>
             </div>
-            <div class="merge-result" style="filter: drop-shadow(0 0 24px ${tier.color}); width:100px; height:100px;">
-                ${getCardArt(data.cardId, 100)}
-            </div>
+            <div class="merge-result" style="filter: drop-shadow(0 0 24px ${tier.color})">${card.emoji}</div>
             <div class="merge-name">${card.name}</div>
             <div style="font-size:11px;color:${tier.color};font-weight:800;letter-spacing:1px;">
                 ${tier.name.toUpperCase()}
@@ -423,11 +417,11 @@ function renderJournal() {
 
         return `
             <div class="journal-item">
-                <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${getCardArt(a, 28)}</div>
+                <span class="emoji">${cardA.emoji}</span>
                 <span class="arrow">+</span>
-                <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${getCardArt(b, 28)}</div>
+                <span class="emoji">${cardB.emoji}</span>
                 <span class="arrow">=</span>
-                <div style="width:28px;height:28px;display:flex;align-items:center;justify-content:center;">${getCardArt(recipe.result, 28)}</div>
+                <span class="emoji">${resCard.emoji}</span>
                 <span class="result">${resCard.name}</span>
             </div>
         `;
@@ -467,6 +461,8 @@ function buyHint() {
     const pick = pool[Math.floor(Math.random() * pool.length)];
 
     const key = [pick.a, pick.b].sort().join('+');
+    const cardA = getCard(pick.a);
+    const cardB = getCard(pick.b);
     const resCard = getCard(pick.result);
     const tier = getTierInfo(resCard.tier);
 
@@ -483,11 +479,11 @@ function buyHint() {
     const hintHTML = `
         <div class="merge-title" style="color:#ffcc66;">Подсказка!</div>
         <div class="merge-formula">
-            <div style="width:60px;height:60px;">${getCardArt(pick.a, 60)}</div>
+            <span>${cardA.emoji}</span>
             <span class="arrow">+</span>
-            <div style="width:60px;height:60px;">${getCardArt(pick.b, 60)}</div>
+            <span>${cardB.emoji}</span>
             <span class="arrow">=</span>
-            <div style="width:60px;height:60px;">${getCardArt(pick.result, 60)}</div>
+            <span>${resCard.emoji}</span>
         </div>
         <div class="merge-name">${resCard.name}</div>
         <div style="font-size:11px;color:${tier.color};font-weight:800;letter-spacing:1px;">
@@ -568,14 +564,11 @@ function renderTreeMap() {
                         const card = getCard(id);
                         const ti = getTierInfo(card.tier);
                         const isSeen = seen.has(id);
-                        const art = isSeen
-                            ? getCardArt(id, 32)
-                            : `<div style="font-size:22px;color:#4a4f5e;">❓</div>`;
                         return `
                             <div class="tree-card ${isSeen ? '' : 'unknown'}"
                                  style="--tier-color:${ti.color}; --tier-glow:${ti.glow}"
                                  onclick="showTreeInfo('${id}')">
-                                <div class="tree-card-emoji">${art}</div>
+                                <div class="tree-card-emoji">${isSeen ? card.emoji : '❓'}</div>
                                 <div class="tree-card-name">${isSeen ? card.name : '???'}</div>
                                 ${isSeen ? '<div class="tree-card-check">✓</div>' : ''}
                             </div>
@@ -608,7 +601,7 @@ function showTreeInfo(cardId) {
     const isDiscovered = recipe && discovered.has([recipe.a, recipe.b].sort().join('+'));
 
     let contentHTML = `
-        <div class="tree-info-emoji">${isSeen ? getCardArt(cardId, 80) : '<span style="font-size:60px;color:#4a4f5e;">❓</span>'}</div>
+        <div class="tree-info-emoji">${isSeen ? card.emoji : '❓'}</div>
         <div class="tree-info-name">${isSeen ? card.name : '???'}</div>
         <div class="tree-info-tier" style="color:${tier.color}">${tier.name}</div>
     `;
@@ -627,11 +620,11 @@ function showTreeInfo(cardId) {
 
         contentHTML += `
             <div class="tree-info-formula">
-                <div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">${aSeen ? getCardArt(recipe.a, 50) : '<span style="font-size:36px;color:#4a4f5e;">❓</span>'}</div>
+                <span>${aSeen ? cardA.emoji : '❓'}</span>
                 <span class="arrow">+</span>
-                <div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">${bSeen ? getCardArt(recipe.b, 50) : '<span style="font-size:36px;color:#4a4f5e;">❓</span>'}</div>
+                <span>${bSeen ? cardB.emoji : '❓'}</span>
                 <span class="arrow">=</span>
-                <div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;">${isSeen ? getCardArt(cardId, 50) : '<span style="font-size:36px;color:#4a4f5e;">❓</span>'}</div>
+                <span>${isSeen ? card.emoji : '❓'}</span>
             </div>
             <div class="tree-info-formula-name">
                 ${aSeen ? cardA.name : '???'} + ${bSeen ? cardB.name : '???'}

@@ -16,10 +16,12 @@ async function openPack() {
     d.gold -= PACK_PRICE;
 
     const cardId = rollBaseCard();
+    const card = getCard(cardId);
 
     if (!d.inventory) d.inventory = {};
     d.inventory[cardId] = (d.inventory[cardId] || 0) + 1;
 
+    // Первое открытие базовой — в коллекцию
     if (!d.seen) d.seen = [];
     if (!d.seen.includes(cardId)) {
         d.seen.push(cardId);
@@ -72,14 +74,13 @@ function revealCard(cardId, index) {
 
     const card = getCard(cardId);
     const tier = getTierInfo(card.tier);
-    const svg = getCardArt(cardId, 80);
 
     const el = document.createElement('div');
     el.className = `pack-card revealed`;
     el.style.setProperty('--tier-color', tier.color);
     el.style.setProperty('--tier-glow', tier.glow);
     el.innerHTML = `
-        <div class="pack-card-emoji">${svg}</div>
+        <div class="pack-card-emoji">${card.emoji}</div>
         <div class="pack-card-name">${card.name}</div>
         <div class="pack-card-rarity" style="color:${tier.color}">${tier.name}</div>
     `;
