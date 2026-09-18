@@ -164,6 +164,18 @@ function rollBaseCard() {
     return base[Math.floor(Math.random() * base.length)];
 }
 
+// ============================================================
+// ПОЛУЧИТЬ SVG-ГРАФИКУ КАРТЫ
+// ============================================================
+function getCardArt(cardId, size = 60) {
+    if (typeof cardArt === 'function') {
+        return cardArt(cardId, size);
+    }
+    // Fallback на эмодзи, если SVG не подгрузился
+    const card = getCard(cardId);
+    return card ? `<span style="font-size:${size * 0.7}px;">${card.emoji}</span>` : '';
+}
+
 function validateTree() {
     const errors = [];
     const allIds = getAllCardIds();
@@ -182,10 +194,8 @@ function validateTree() {
         if (!CARDS[r.a]) errors.push(`❌ Рецепт: карта "${r.a}" не существует`);
         if (!CARDS[r.b]) errors.push(`❌ Рецепт: карта "${r.b}" не существует`);
         if (!CARDS[r.result]) errors.push(`❌ Рецепт: результат "${r.result}" не существует`);
-
-        // Рецепт не может ссылаться на самого себя
         if (r.a === r.result || r.b === r.result) {
-            errors.push(`⚠️ Рецепт ${r.a}+${r.b}=${r.result} ссылается на самого себя`);
+            errors.push(`⚠️ Рецепт ${r.a}+${r.b}=${r.result} ссылается на себя`);
         }
     }
 
@@ -197,22 +207,18 @@ function validateTree() {
         seen.add(key);
     }
 
-    // 4. Проверка на зацикливание (нельзя получить карту через саму себя косвенно)
-    // Строим граф: карта → какие карты нужны для её получения
+    // 4. Проверка на зацикливание
     const deps = {};
     for (const r of RECIPES) {
         deps[r.result] = [r.a, r.b];
     }
 
-    // Для каждой карты проверяем, что её можно получить "снизу вверх"
     function canCraft(cardId, visited = new Set()) {
         if (baseIds.has(cardId)) return true;
-        if (visited.has(cardId)) return false; // цикл!
+        if (visited.has(cardId)) return false;
         visited.add(cardId);
-
         const dep = deps[cardId];
         if (!dep) return false;
-
         return dep.every(d => canCraft(d, new Set(visited)));
     }
 
@@ -241,4 +247,5 @@ window.getBaseCards = getBaseCards;
 window.getAllCardIds = getAllCardIds;
 window.getTotalCardsCount = getTotalCardsCount;
 window.rollBaseCard = rollBaseCard;
+window.getCardArt = getCardArt;
 window.validateTree = validateTree;
