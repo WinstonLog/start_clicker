@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#0a0715">
+<meta name="description" content="Star Alchemy — алхимия карт от канала @VGPST">
+<title>⚗️ Star Alchemy</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚗️</text></svg>">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- МОДАЛКА ВХОДА -->
+<div id="authModal" class="modal">
+    <div class="card">
+        <h1 class="logo">⚗️ STAR ALCHEMY</h1>
+
+        <div class="tabs">
+            <button class="tab active" data-tab="login">Вход</button>
+            <button class="tab" data-tab="register">Регистрация</button>
+        </div>
+
+        <form id="authForm">
+            <label>Имя
+                <input id="inName" type="text" maxlength="20" autocomplete="username" required>
+            </label>
+            <label>Пароль
+                <input id="inPass" type="password" minlength="6" autocomplete="current-password" required>
+            </label>
+            <label id="wrapPass2" style="display:none">Повтор пароля
+                <input id="inPass2" type="password" minlength="6" autocomplete="new-password">
+            </label>
+            <div id="err" class="err"></div>
+            <button type="submit" id="btnSubmit" class="submit">Войти</button>
+        </form>
+    </div>
+</div>
+
+<!-- ИГРА -->
+<div id="game" class="game" style="display:none">
+
+    <header class="topbar">
+        <button id="burgerBtn" class="burger-btn" aria-label="Меню">
+            <span></span><span></span><span></span>
+        </button>
+
+        <div class="stat">
+            <span class="stat-icon">💠</span>
+            <span id="uiGold">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-icon">🎴</span>
+            <span id="uiCards">0</span>
+        </div>
+        <div class="stat stat-rating">
+            <span class="stat-icon">🏆</span>
+            <span id="uiRating">0</span>
+        </div>
+
+        <button id="bonusBtn" class="bonus-btn" onclick="claimBonus()" title="Ежедневный бонус">
+            🎁
+        </button>
+
+        <button id="btnLogout" title="Выйти">⎋</button>
+    </header>
+
+    <div class="xp-bar">
+        <div class="xp-bar-info">
+            <span class="xp-level">Уровень <b id="uiLevel">1</b></span>
+            <span class="xp-numbers"><span id="uiXp">0</span> / <span id="uiXpNext">50</span></span>
+        </div>
+        <div class="xp-track">
+            <div id="xpFill" class="xp-fill" style="width:0%"></div>
+        </div>
+    </div>
+
+    <main class="content" id="content">
+
+        <!-- КЛИКЕР -->
+        <section class="view active" data-view="main">
+            <div class="income-bar">
+                <div class="income-item">
+                    <span>👆</span>
+                    <span id="uiPerClick">1</span>
+                </div>
+                <div class="income-item">
+                    <span>⚙️</span>
+                    <span id="uiPerSec">0</span>
+                </div>
+                <div class="income-item">
+                    <span>⚡</span>
+                    <span id="uiCrit">0%</span>
+                </div>
+                <div class="income-item">
+                    <span>📈</span>
+                    <span id="uiBonus">+0%</span>
+                </div>
+            </div>
+
+            <div class="playground">
+                <div id="crystal" class="crystal">
+                    <div class="crystal-core">💎</div>
+                    <div class="crystal-glow"></div>
+                </div>
+                <div class="hint">Тапай по кристаллу</div>
+            </div>
+
+            <div class="pack-section">
+                <button id="openPackBtn" class="open-pack-btn" onclick="openPack()">
+                    📦 Открыть пак — <span id="packPrice">100</span> 💠
+                </button>
+            </div>
+
+            <section class="upgrades" id="upgradesPanel"></section>
+        </section>
+
+        <!-- ЛАБОРАТОРИЯ -->
+        <section class="view" data-view="lab">
+            <h2 class="collection-header">
+                ⚗️ Лаборатория
+                <div style="font-size:11px;color:#6b7084;margin-top:4px;font-weight:500;">
+                    Соедини 2 карты, чтобы открыть новую
+                </div>
+            </h2>
+
+            <div class="lab-slots">
+                <div class="lab-slot" id="slotA" onclick="openPicker('A')">
+                    <span class="lab-slot-plus">?</span>
+                </div>
+                <div class="lab-plus">+</div>
+                <div class="lab-slot" id="slotB" onclick="openPicker('B')">
+                    <span class="lab-slot-plus">?</span>
+                </div>
+            </div>
+
+            <div class="lab-preview" id="labPreview">
+                <div class="lab-preview-arrow">⬇</div>
+                <div class="lab-preview-result">?</div>
+                <div class="lab-preview-label">Результат</div>
+            </div>
+
+            <div class="lab-actions">
+                <button class="lab-merge-btn" id="labMergeBtn" onclick="doMerge()" disabled>
+                    ⚗️ Слить
+                </button>
+                <button class="lab-clear-btn" onclick="clearSlots()">
+                    ❌ Очистить
+                </button>
+            </div>
+
+            <div class="lab-hint-section">
+                <button class="lab-hint-btn" onclick="buyHint()">
+                    💡 Подсказка за 500 💠
+                </button>
+            </div>
+
+            <div class="lab-tree-section">
+                <button class="lab-tree-btn" onclick="openTreeMap()">
+                    🗺️ Карта слияний
+                </button>
+            </div>
+
+            <h3 class="bonus-table-title">📖 Твой журнал</h3>
+            <div class="lab-journal" id="labJournal"></div>
+        </section>
+
+        <!-- КОЛЛЕКЦИЯ -->
+        <section class="view" data-view="collection">
+            <h2 id="collectionHeader" class="collection-header">📖 Собрано 0 / 0</h2>
+            <div id="collectionContainer" class="collection-grid"></div>
+        </section>
+
+        <!-- ИНВЕНТАРЬ -->
+        <section class="view" data-view="inventory">
+            <h2 class="collection-header">
+                🎒 Инвентарь
+                <div style="font-size:11px;color:#6b7084;margin-top:4px;font-weight:500;">
+                    Карты для слияний
+                </div>
+            </h2>
+            <div id="inventoryContainer" class="inventory-grid"></div>
+        </section>
+
+        <!-- ТОП -->
+        <section class="view" data-view="top">
+            <h2 class="collection-header">
+                🏆 Топ игроков
+                <div style="font-size:11px;color:#6b7084;margin-top:4px;font-weight:500;">
+                    Рейтинг за все действия
+                </div>
+            </h2>
+            <div id="topContainer" class="top-container">
+                <div class="top-loading">⏳ Загрузка топа...</div>
+            </div>
+        </section>
+
+        <!-- БОНУС -->
+        <section class="view" data-view="bonus">
+            <h2 class="collection-header">🎁 Ежедневный бонус</h2>
+
+            <div class="bonus-card">
+                <div class="bonus-card-streak">
+                    🔥 Стрик: <b id="bonusCardStreak">0</b> дней
+                </div>
+                <div class="bonus-card-timer">
+                    <div class="bonus-timer-label">До следующего бонуса:</div>
+                    <div class="bonus-timer-value" id="bonusTimer">Готово!</div>
+                </div>
+                <button class="bonus-claim-big" id="bonusClaimBtn" onclick="claimBonus()">
+                    🎁 Забрать бонус
+                </button>
+            </div>
+
+            <h3 class="bonus-table-title">📅 Награды за дни стрика</h3>
+            <div class="bonus-table" id="bonusTable"></div>
+        </section>
+
+        <!-- ПРОФИЛЬ -->
+        <section class="view" data-view="profile">
+            <h2 class="collection-header">👤 Профиль</h2>
+
+            <div class="profile-card">
+                <div class="profile-avatar">🧙</div>
+                <div class="profile-name" id="profileName">—</div>
+                <div class="profile-id" id="profileId">ID: —</div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileLevel">1</div>
+                    <div class="profile-stat-label">Уровень</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileRating">0</div>
+                    <div class="profile-stat-label">Рейтинг</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileCards">0</div>
+                    <div class="profile-stat-label">Открыто</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileMerges">0</div>
+                    <div class="profile-stat-label">Слияний</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileClicks">0</div>
+                    <div class="profile-stat-label">Кликов</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="profile-stat-value" id="profileStreak">0</div>
+                    <div class="profile-stat-label">Стрик</div>
+                </div>
+            </div>
+
+            <div class="profile-actions">
+                <button class="profile-action-btn" onclick="copyMyId()">
+                    📋 Скопировать ID
+                </button>
+            </div>
+        </section>
+
+        <!-- НАСТРОЙКИ -->
+        <section class="view" data-view="settings">
+            <h2 class="collection-header">⚙️ Настройки</h2>
+
+            <div class="settings-list">
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-name">🔊 Звуки</div>
+                        <div class="settings-desc">Щелчки и уведомления</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="soundToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+
+                <div class="settings-item">
+                    <div class="settings-info">
+                        <div class="settings-name">📳 Вибрация</div>
+                        <div class="settings-desc">Отклик на действия</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="vibrationToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 class="bonus-table-title">⚠️ Опасная зона</h3>
+            <div class="settings-list">
+                <button class="danger-btn" onclick="resetProgress()">
+                    🗑️ Сбросить прогресс
+                </button>
+            </div>
+
+            <div class="settings-version">
+                Star Alchemy v1.0<br>
+                Проект канала @VGPST
+            </div>
+        </section>
+
+    </main>
+
+</div>
+
+<!-- БОКОВОЕ МЕНЮ -->
+<div id="sidebarOverlay" class="sidebar-overlay"></div>
+<aside id="sidebar" class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">⚗️ STAR ALCHEMY</div>
+        <div class="sidebar-user">
+            <span class="sidebar-avatar">🧙</span>
+            <div>
+                <div class="sidebar-name" id="sidebarName">—</div>
+                <div class="sidebar-level">Уровень <b id="sidebarLevel">1</b></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <button class="sidebar-item active" data-view="main" onclick="switchTab('main')">
+            <span class="sidebar-icon">💎</span>
+            <span>Кликер</span>
+        </button>
+        <button class="sidebar-item" data-view="lab" onclick="switchTab('lab')">
+            <span class="sidebar-icon">⚗️</span>
+            <span>Лаборатория</span>
+        </button>
+        <button class="sidebar-item" onclick="openTreeMap(); closeSidebar();">
+            <span class="sidebar-icon">🗺️</span>
+            <span>Карта слияний</span>
+        </button>
+        <button class="sidebar-item" data-view="inventory" onclick="switchTab('inventory')">
+            <span class="sidebar-icon">🎒</span>
+            <span>Инвентарь</span>
+        </button>
+        <button class="sidebar-item" data-view="collection" onclick="switchTab('collection')">
+            <span class="sidebar-icon">📖</span>
+            <span>Коллекция</span>
+        </button>
+        <button class="sidebar-item" data-view="top" onclick="switchTab('top')">
+            <span class="sidebar-icon">🏆</span>
+            <span>Топ игроков</span>
+        </button>
+        <button class="sidebar-item" data-view="bonus" onclick="switchTab('bonus')">
+            <span class="sidebar-icon">🎁</span>
+            <span>Бонус</span>
+            <span class="sidebar-badge" id="bonusSidebarBadge">!</span>
+        </button>
+        <button class="sidebar-item" data-view="profile" onclick="switchTab('profile')">
+            <span class="sidebar-icon">👤</span>
+            <span>Профиль</span>
+        </button>
+        <button class="sidebar-item" data-view="settings" onclick="switchTab('settings')">
+            <span class="sidebar-icon">⚙️</span>
+            <span>Настройки</span>
+        </button>
+    </nav>
+
+    <div class="sidebar-footer">
+        <button class="sidebar-logout" onclick="document.getElementById('btnLogout').click()">
+            🚪 Выйти из аккаунта
+        </button>
+    </div>
+</aside>
+
+<!-- ПИКЕР КАРТ -->
+<div id="cardPickerOverlay" class="picker-overlay" style="display:none" onclick="closePicker(event)">
+    <div class="picker-content" onclick="event.stopPropagation()">
+        <div class="picker-header">
+            <span id="pickerTitle">Выбери карту</span>
+            <button class="picker-close" onclick="closePicker()">✕</button>
+        </div>
+        <div class="picker-grid" id="pickerGrid"></div>
+    </div>
+</div>
+
+<!-- ОВЕРЛЕЙ ПАКА -->
+<div id="packOverlay" class="pack-overlay" style="display:none">
+    <div class="pack-overlay-content">
+        <h2 class="pack-title">📦 Открываем пак...</h2>
+        <div id="packCards" class="pack-cards"></div>
+    </div>
+</div>
+
+<!-- ОВЕРЛЕЙ СЛИЯНИЯ -->
+<div id="mergeOverlay" class="merge-overlay" style="display:none">
+    <div class="merge-content" id="mergeContent"></div>
+</div>
+
+<!-- ОВЕРЛЕЙ УРОВНЯ -->
+<div id="levelUpOverlay" class="levelup-overlay" style="display:none">
+    <div class="levelup-content">
+        <div class="levelup-icon">⭐</div>
+        <div class="levelup-title">НОВЫЙ УРОВЕНЬ!</div>
+        <div class="levelup-level" id="levelUpNumber">2</div>
+        <div class="levelup-bonus">+2% к добыче</div>
+        <button class="levelup-close" onclick="closeLevelUpOverlay()">Продолжить</button>
+    </div>
+</div>
+
+<!-- ОВЕРЛЕЙ БОНУСА -->
+<div id="bonusOverlay" class="bonus-overlay" style="display:none">
+    <div class="bonus-content">
+        <div class="bonus-icon">🎁</div>
+        <div class="bonus-title">ЕЖЕДНЕВНЫЙ БОНУС</div>
+        <div class="bonus-day" id="bonusDay">День 1</div>
+
+        <div class="bonus-rewards">
+            <div class="bonus-reward">
+                <span class="bonus-reward-icon">💠</span>
+                <span id="bonusEssence">+100</span>
+            </div>
+            <div class="bonus-reward" id="bonusPacks">
+                <span class="bonus-reward-icon">📦</span>
+                <span>+0</span>
+            </div>
+            <div class="bonus-reward">
+                <span class="bonus-reward-icon">⭐</span>
+                <span id="bonusXp">+20 XP</span>
+            </div>
+        </div>
+
+        <div class="bonus-streak-info">
+            🔥 Бонус к добыче: <b id="bonusStreakValue">+0%</b>
+        </div>
+
+        <button class="bonus-close" onclick="closeBonusOverlay()">Забрать</button>
+    </div>
+</div>
+
+<!-- ОВЕРЛЕЙ КАРТЫ ДЕРЕВА -->
+<div id="treeOverlay" class="tree-overlay" style="display:none">
+    <div class="tree-header">
+        <div class="tree-title">🗺️ Дерево слияний</div>
+        <button class="tree-close" onclick="closeTreeMap()">✕</button>
+    </div>
+    <div class="tree-hint">
+        👆 Тапай по карте, чтобы увидеть её рецепт
+    </div>
+    <div class="tree-scroll" id="treeScroll">
+        <div class="tree-canvas" id="treeCanvas"></div>
+    </div>
+</div>
+
+<div id="floatLayer" class="float-layer"></div>
+
+<script src="js/config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/sound.js"></script>
+<script src="js/cards.js"></script>
+<script src="js/alchemy.js"></script>
+<script src="js/packs.js"></script>
+<script src="js/top.js"></script>
+<script src="js/levels.js"></script>
+<script src="js/bonus.js"></script>
+<script src="js/main.js"></script>
+</body>
+</html>
