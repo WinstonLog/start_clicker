@@ -48,8 +48,11 @@ function showPackOpening(cards) {
     container.innerHTML = '';
 
     cards.forEach((cardId, i) => {
+        const card = getCard(cardId);              
+        const tier = getTierInfo(card.tier);       
+
         const el = document.createElement('div');
-        el.className = `pack-card revealed tier-${card.tier}`;
+        el.className = `pack-card`;
         el.style.setProperty('--tier-color', tier.color);
         el.style.setProperty('--tier-glow', tier.glow);
         el.dataset.index = i;
