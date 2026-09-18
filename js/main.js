@@ -4,6 +4,67 @@
 let mode = 'login';
 const $ = id => document.getElementById(id);
 
+// ============================================================
+// ПРОВЕРКА ОБНОВЛЕНИЙ
+// ============================================================
+async function checkForUpdates() {
+    try {
+        const res = await fetch('version.json?t=' + Date.now(), {
+            cache: 'no-store'
+        });
+        const data = await res.json();
+        const serverVersion = data.version;
+        const localVersion = window.GAME_VERSION;
+
+        if (serverVersion && localVersion && serverVersion !== localVersion) {
+            showUpdateModal(serverVersion);
+        }
+    } catch (e) {
+        console.debug('checkForUpdates:', e.message);
+    }
+}
+
+function showUpdateModal(newVersion) {
+    // Если уже показана — не дублируем
+    if (document.getElementById('updateModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'updateModal';
+    modal.innerHTML = `
+        <div class="update-box">
+            <div class="update-icon">🔄</div>
+            <h2>Доступна новая версия</h2>
+            <p>Текущая: <b>${window.GAME_VERSION}</b><br>
+               Новая: <b>${newVersion}</b></p>
+            <p class="update-hint">Обновите игру, чтобы продолжить</p>
+            <button onclick="hardReload()">Обновить сейчас</button>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+}
+
+// Проверка при старте
+checkForUpdates();
+
+// И каждые 5 минут (если игрок долго сидит)
+setInterval(checkForUpdates, 10 * 1000); // каждые 10 сек
+
+function hardReload() {
+    // Пытаемся очистить кэш через Cache API
+    if ('caches' in window) {
+        caches.keys().then(names => {
+            names.forEach(name => caches.delete(name));
+        });
+    }
+
+    // Перезагружаем с уникальным параметром в URL —
+    // это заставляет браузер запросить всё заново
+    const url = new URL(location.href);
+    url.searchParams.set('_r', Date.now());
+    location.replace(url.toString());
+}
+
 function setMode(m) {
     mode = m;
     document.querySelectorAll('.tab').forEach(t =>
