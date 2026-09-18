@@ -345,14 +345,19 @@ function bindCrystal() {
     if (!c || c.dataset.bound) return;
     c.dataset.bound = '1';
 
-    c.addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const t = e.touches[0];
-        doClick(t.clientX, t.clientY);
-    }, { passive: false });
+    // Используем pointerdown — работает и для тача, и для мыши
+    let lastTouch = 0;
 
-    c.addEventListener('click', (e) => {
-        doClick(e.clientX, e.clientY);
+    c.addEventListener('pointerdown', (e) => {
+        // Защита от дублей на мобилке
+        if (e.pointerType === 'touch') {
+            lastTouch = Date.now();
+            doClick(e.clientX, e.clientY);
+        } else if (e.pointerType === 'mouse') {
+            // Игнорим mouse, если только что был touch
+            if (Date.now() - lastTouch < 400) return;
+            doClick(e.clientX, e.clientY);
+        }
     });
 }
 

@@ -169,6 +169,7 @@ function validateTree() {
     const allIds = getAllCardIds();
     const baseIds = new Set(getBaseCards());
 
+    // 1. Каждая не-базовая карта имеет ровно 1 рецепт
     for (const id of allIds) {
         if (baseIds.has(id)) continue;
         const recipes = RECIPES.filter(r => r.result === id);
@@ -176,23 +177,19 @@ function validateTree() {
         if (recipes.length > 1) errors.push(`⚠️ ${id} — несколько рецептов (${recipes.length})`);
     }
 
+    // 2. Каждый рецепт ссылается на существующие карты
     for (const r of RECIPES) {
         if (!CARDS[r.a]) errors.push(`❌ Рецепт: карта "${r.a}" не существует`);
         if (!CARDS[r.b]) errors.push(`❌ Рецепт: карта "${r.b}" не существует`);
         if (!CARDS[r.result]) errors.push(`❌ Рецепт: результат "${r.result}" не существует`);
 
-        if (CARDS[r.a] && CARDS[r.result]) {
-            if (CARDS[r.a].tier >= CARDS[r.result].tier) {
-                errors.push(`⚠️ ${r.a} (t${CARDS[r.a].tier}) >= ${r.result} (t${CARDS[r.result].tier})`);
-            }
-        }
-        if (CARDS[r.b] && CARDS[r.result]) {
-            if (CARDS[r.b].tier >= CARDS[r.result].tier) {
-                errors.push(`⚠️ ${r.b} (t${CARDS[r.b].tier}) >= ${r.result} (t${CARDS[r.result].tier})`);
-            }
+        // Рецепт не может ссылаться на самого себя
+        if (r.a === r.result || r.b === r.result) {
+            errors.push(`⚠️ Рецепт ${r.a}+${r.b}=${r.result} ссылается на самого себя`);
         }
     }
 
+    // 3. Никаких дубликатов рецептов
     const seen = new Set();
     for (const r of RECIPES) {
         const key = [r.a, r.b].sort().join('+');
@@ -200,10 +197,35 @@ function validateTree() {
         seen.add(key);
     }
 
+    // 4. Проверка на зацикливание (нельзя получить карту через саму себя косвенно)
+    // Строим граф: карта → какие карты нужны для её получения
+    const deps = {};
+    for (const r of RECIPES) {
+        deps[r.result] = [r.a, r.b];
+    }
+
+    // Для каждой карты проверяем, что её можно получить "снизу вверх"
+    function canCraft(cardId, visited = new Set()) {
+        if (baseIds.has(cardId)) return true;
+        if (visited.has(cardId)) return false; // цикл!
+        visited.add(cardId);
+
+        const dep = deps[cardId];
+        if (!dep) return false;
+
+        return dep.every(d => canCraft(d, new Set(visited)));
+    }
+
+    for (const id of allIds) {
+        if (!canCraft(id)) {
+            errors.push(`❌ ${id} — невозможно получить (цикл в зависимостях)`);
+        }
+    }
+
     if (errors.length === 0) {
         console.log('✅ Дерево валидно! Карт:', allIds.length, '| Рецептов:', RECIPES.length);
     } else {
-        console.warn('Проблемы:', errors);
+        console.warn('❌ Проблемы:', errors);
     }
 
     return errors;
