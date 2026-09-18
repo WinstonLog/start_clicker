@@ -40,7 +40,7 @@ function renderInventory() {
         const card = getCard(id);
         const tier = getTierInfo(card.tier);
         return `
-            <div class="inventory-card"
+            <div class="inventory-card tier-${card.tier}"
                  style="--tier-color:${tier.color}; --tier-glow:${tier.glow}"
                  onclick="pickFromInventory('${id}')">
                 <div class="inventory-count">×${inv[id]}</div>
@@ -93,7 +93,7 @@ function renderCollection() {
         const isSeen = seen.has(id);
 
         return `
-            <div class="collection-card ${isSeen ? '' : 'locked'}"
+            <div class="collection-card tier-${card.tier} ${isSeen ? '' : 'locked'}"
                  style="--tier-color:${tier.color}; --tier-glow:${tier.glow}">
                 <div class="collection-emoji">${isSeen ? card.emoji : '❓'}</div>
                 <div class="collection-name">${isSeen ? card.name : '???'}</div>
@@ -117,7 +117,19 @@ function openPicker(slot) {
 
     const d = state.data;
     const inv = d.inventory || {};
-    const ids = Object.keys(inv).filter(id => inv[id] > 0);
+
+    // Какая карта уже стоит в другом слоте
+    const otherSlot = slot === 'A' ? slotB : slotA;
+
+    // Все карты с количеством > 0
+    let ids = Object.keys(inv).filter(id => inv[id] > 0);
+
+    // Фильтр: если карта в другом слоте и её 1 шт — не показываем
+    // (нельзя поставить одну и ту же карту в оба слота — её не хватит на слияние)
+    ids = ids.filter(id => {
+        if (id === otherSlot && (inv[id] || 0) < 2) return false;
+        return true;
+    });
 
     ids.sort((a, b) => {
         const ca = getCard(a), cb = getCard(b);
@@ -127,13 +139,13 @@ function openPicker(slot) {
     });
 
     if (ids.length === 0) {
-        grid.innerHTML = `<div class="picker-empty">Инвентарь пуст</div>`;
+        grid.innerHTML = `<div class="picker-empty">Нет доступных карт</div>`;
     } else {
         grid.innerHTML = ids.map(id => {
             const card = getCard(id);
             const tier = getTierInfo(card.tier);
             return `
-                <div class="picker-card"
+                <div class="picker-card tier-${card.tier}"
                      style="--tier-color:${tier.color}"
                      onclick="selectCard('${id}')">
                     <div class="picker-card-count">×${inv[id]}</div>
@@ -181,24 +193,37 @@ function renderSlots() {
     const preview = document.querySelector('.lab-preview-result');
     if (preview) {
         if (slotA && slotB) {
-            const recipe = findRecipe(slotA, slotB);
-            if (recipe) {
-                const resCard = getCard(recipe.result);
-                const isNew = !(state.data.seen || []).includes(recipe.result);
-                preview.textContent = resCard.emoji;
-                preview.classList.add('known');
-                preview.style.filter = isNew
-                    ? 'drop-shadow(0 0 20px #ffcc66)'
-                    : 'drop-shadow(0 0 20px #4ad4ff)';
+            const d = state.data;
+            const inv = d.inventory || {};
+
+            // Проверка: хватает ли карт для слияния
+            let enough = true;
+            if (slotA === slotB) {
+                if ((inv[slotA] || 0) < 2) enough = false;
             } else {
+                if ((inv[slotA] || 0) < 1 || (inv[slotB] || 0) < 1) enough = false;
+            }
+
+            if (!enough) {
                 preview.textContent = '❌';
                 preview.classList.remove('known');
                 preview.style.filter = '';
+            } else {
+                const recipe = findRecipe(slotA, slotB);
+                if (recipe) {
+                    const resCard = getCard(recipe.result);
+                    const isNew = !(d.seen || []).includes(recipe.result);
+                    preview.textContent = resCard.emoji;
+                    preview.classList.add('known');
+                    preview.style.filter = isNew
+                        ? 'drop-shadow(0 0 20px #ffcc66) drop-shadow(0 0 40px #ffcc66)'
+                        : 'drop-shadow(0 0 20px #4ad4ff)';
+                } else {
+                    preview.textContent = '❌';
+                    preview.classList.remove('known');
+                    preview.style.filter = '';
+                }
             }
-        } else {
-            preview.textContent = '?';
-            preview.classList.remove('known');
-            preview.style.filter = '';
         }
     }
 }
@@ -362,7 +387,7 @@ function showMergeOverlay(data) {
                 <span>${cardB.emoji}</span>
                 <span class="arrow">→</span>
             </div>
-            <div class="merge-result" style="filter: drop-shadow(0 0 24px ${tier.color})">${card.emoji}</div>
+            <div class="merge-result tier-${card.tier}" style="filter: drop-shadow(0 0 24px ${tier.color})">${card.emoji}</div>
             <div class="merge-name">${card.name}</div>
             <div style="font-size:11px;color:${tier.color};font-weight:800;letter-spacing:1px;">
                 ${tier.name.toUpperCase()}
@@ -565,7 +590,7 @@ function renderTreeMap() {
                         const ti = getTierInfo(card.tier);
                         const isSeen = seen.has(id);
                         return `
-                            <div class="tree-card ${isSeen ? '' : 'unknown'}"
+                            <div class="tree-card tier-${card.tier} ${isSeen ? '' : 'unknown'}"
                                  style="--tier-color:${ti.color}; --tier-glow:${ti.glow}"
                                  onclick="showTreeInfo('${id}')">
                                 <div class="tree-card-emoji">${isSeen ? card.emoji : '❓'}</div>
@@ -601,7 +626,7 @@ function showTreeInfo(cardId) {
     const isDiscovered = recipe && discovered.has([recipe.a, recipe.b].sort().join('+'));
 
     let contentHTML = `
-        <div class="tree-info-emoji">${isSeen ? card.emoji : '❓'}</div>
+        <div class="tree-info-emoji tier-${card.tier}" style="filter: drop-shadow(0 0 20px ${tier.color})">${isSeen ? card.emoji : '❓'}</div>
         <div class="tree-info-name">${isSeen ? card.name : '???'}</div>
         <div class="tree-info-tier" style="color:${tier.color}">${tier.name}</div>
     `;

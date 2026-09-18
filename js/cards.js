@@ -18,7 +18,7 @@ const CARDS = {
     // TIER 0
     water:  { name: 'Вода',    emoji: '💧', tier: 0 },
     fire:   { name: 'Огонь',   emoji: '🔥', tier: 0 },
-    earth:  { name: 'Земля',   emoji: '🪨', tier: 0 },
+    earth:  { name: 'Земля',   emoji: '🌍', tier: 0 },
     air:    { name: 'Воздух',  emoji: '💨', tier: 0 },
     energy: { name: 'Энергия', emoji: '⚡', tier: 0 },
     ice:    { name: 'Лёд',     emoji: '❄️', tier: 0 },
@@ -27,13 +27,13 @@ const CARDS = {
     steam:  { name: 'Пар',     emoji: '♨️', tier: 1 },
     dust:   { name: 'Пыль',    emoji: '🌫️', tier: 1 },
     mud:    { name: 'Грязь',   emoji: '🟫', tier: 1 },
-    lava:   { name: 'Лава',    emoji: '🌋', tier: 1 },
+    lava:   { name: 'Лава',    emoji: '🟠', tier: 1 },
     spark:  { name: 'Искра',   emoji: '✨', tier: 1 },
     snow:   { name: 'Снег',    emoji: '🌨️', tier: 1 },
 
     // TIER 2
     cloud:  { name: 'Облако',  emoji: '☁️', tier: 2 },
-    ash:    { name: 'Пепел',   emoji: '🪶', tier: 2 },
+    ash:    { name: 'Пепел',   emoji: '🌑', tier: 2 },
     sprout: { name: 'Росток',  emoji: '🌿', tier: 2 },
     glacier:{ name: 'Ледник',  emoji: '🧊', tier: 2 },
     crystal:{ name: 'Кристалл',emoji: '💎', tier: 2 },
@@ -41,7 +41,7 @@ const CARDS = {
 
     // TIER 3
     rain:   { name: 'Дождь',    emoji: '🌧️', tier: 3 },
-    stone:  { name: 'Камень',   emoji: '🗿', tier: 3 },
+    stone:  { name: 'Камень',   emoji: '🪨', tier: 3 },
     tree:   { name: 'Дерево',   emoji: '🌳', tier: 3 },
     mirror: { name: 'Зеркало',  emoji: '🪞', tier: 3 },
     diamond:{ name: 'Алмаз',    emoji: '💠', tier: 3 },
@@ -60,7 +60,7 @@ const CARDS = {
     island: { name: 'Остров',   emoji: '🏝️', tier: 5 },
     unicorn:{ name: 'Единорог', emoji: '🦄', tier: 5 },
     crown:  { name: 'Корона',   emoji: '👑', tier: 5 },
-    permafrost: { name: 'Вечный лёд', emoji: '🧊', tier: 5 },
+    permafrost: { name: 'Вечный лёд', emoji: '🟦', tier: 5 },
     dragon: { name: 'Дракон',   emoji: '🐉', tier: 5 },
 
     // TIER 6

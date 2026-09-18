@@ -1,5 +1,5 @@
 // ============================================================
-// ПАКИ
+// ПАК — один базовый
 // ============================================================
 
 const PACK_PRICE = 100;
@@ -8,7 +8,6 @@ async function openPack() {
     const d = state.data;
 
     if (d.gold < PACK_PRICE) {
-        shakeElement('openPackBtn');
         spawnFloat('Не хватает!', window.innerWidth / 2, window.innerHeight / 2, '#ff5c7a', 20);
         return;
     }
@@ -19,16 +18,16 @@ async function openPack() {
     const card = getCard(cardId);
 
     if (!d.inventory) d.inventory = {};
-    d.inventory[cardId] = (d.inventory[cardId] || 0) + 1;
-
-    // Первое открытие базовой — в коллекцию
     if (!d.seen) d.seen = [];
+
+    d.inventory[cardId] = (d.inventory[cardId] || 0) + 1;
     if (!d.seen.includes(cardId)) {
         d.seen.push(cardId);
     }
 
     addRating(20);
     addXp(10);
+    d.packsOpened = (d.packsOpened || 0) + 1;
 
     if (typeof playPack === 'function') playPack();
     if (typeof vibrate === 'function') vibrate(40);
@@ -50,7 +49,9 @@ function showPackOpening(cards) {
 
     cards.forEach((cardId, i) => {
         const el = document.createElement('div');
-        el.className = 'pack-card-back';
+        el.className = `pack-card revealed tier-${card.tier}`;
+        el.style.setProperty('--tier-color', tier.color);
+        el.style.setProperty('--tier-glow', tier.glow);
         el.dataset.index = i;
         el.textContent = '?';
         container.appendChild(el);
@@ -131,6 +132,7 @@ function closePackOverlay() {
 
     renderInventory();
     renderCollection();
+    renderStars();
     updatePackButton();
 }
 
@@ -142,7 +144,6 @@ function updatePackButton() {
     const canBuy = d.gold >= PACK_PRICE;
 
     btn.disabled = !canBuy;
-    btn.classList.toggle('disabled', !canBuy);
 }
 
 function switchTab(tab) {
@@ -164,6 +165,8 @@ function switchTab(tab) {
         renderSlots();
         renderJournal();
     }
+    if (tab === 'stars' && typeof renderStars === 'function') renderStars();
+    if (tab === 'achievements' && typeof renderAchievements === 'function') renderAchievements();
     if (tab === 'top') loadTop(true);
     if (tab === 'bonus') {
         if (typeof renderBonusTable === 'function') renderBonusTable();
@@ -183,6 +186,7 @@ function shakeElement(id) {
     setTimeout(() => el.style.transform = '', 120);
 }
 
+window.PACK_PRICE = PACK_PRICE;
 window.openPack = openPack;
 window.switchTab = switchTab;
 window.closePackOverlay = closePackOverlay;

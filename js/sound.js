@@ -4,6 +4,12 @@
 let _audioCtx = null;
 let _soundEnabled = true;
 let _vibrationEnabled = true;
+let _userInteracted = false;
+
+// Разбудить флаг — но не создавать аудио
+document.addEventListener('touchstart', () => { _userInteracted = true; }, { once: true });
+document.addEventListener('click', () => { _userInteracted = true; }, { once: true });
+document.addEventListener('keydown', () => { _userInteracted = true; }, { once: true });
 
 function initAudio() {
     if (_audioCtx) return _audioCtx;
@@ -15,10 +21,16 @@ function initAudio() {
 
 function playTone(freq, duration = 0.08, type = 'sine', volume = 0.1) {
     if (!_soundEnabled) return;
+    if (!_userInteracted) return;   // тихо ждём тапа
     try {
         const ctx = initAudio();
         if (!ctx) return;
-        if (ctx.state === 'suspended') ctx.resume();
+
+        if (ctx.state === 'suspended') {
+            ctx.resume().catch(() => {});
+            return;  // первый звук пропустим — контекст только проснулся
+        }
+        if (ctx.state !== 'running') return;
 
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
@@ -83,6 +95,7 @@ function playMergeFail() {
 
 function vibrate(pattern) {
     if (!_vibrationEnabled) return;
+    if (!_userInteracted) return;
     if (navigator.vibrate) navigator.vibrate(pattern);
 }
 

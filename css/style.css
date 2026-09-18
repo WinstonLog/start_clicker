@@ -206,7 +206,9 @@ input:focus { border-color: #b388ff; }
 }
 .view.active { display: flex; }
 
-/* КЛИКЕР */
+/* ============================================================
+   КЛИКЕР
+   ============================================================ */
 .income-bar {
     display: flex;
     gap: 6px;
@@ -239,7 +241,7 @@ input:focus { border-color: #b388ff; }
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    min-height: 280px;
+    min-height: 260px;
 }
 
 .crystal {
@@ -705,6 +707,159 @@ input:focus { border-color: #b388ff; }
 }
 
 /* ============================================================
+   ПРОКАЧКА КАРТ (ЗВЁЗДЫ)
+   ============================================================ */
+.stars-grid {
+    padding: 8px 12px 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+}
+
+.stars-empty {
+    grid-column: 1 / -1;
+    padding: 60px 20px;
+    text-align: center;
+    color: #6b7084;
+    font-size: 14px;
+}
+
+.star-card {
+    background: linear-gradient(160deg, rgba(0,0,0,0.5), rgba(0,0,0,0.3));
+    border: 2px solid var(--tier-color, #444);
+    border-radius: 12px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 0 12px var(--tier-glow, transparent);
+}
+
+.star-card-emoji { font-size: 40px; line-height: 1; }
+.star-card-name {
+    font-size: 12px; font-weight: 800; color: #e8e8f0;
+    text-align: center; line-height: 1.1;
+}
+.star-card-stars {
+    font-size: 16px;
+    color: #ffcc66;
+    letter-spacing: 2px;
+}
+.star-card-count {
+    font-size: 10px;
+    color: #8b90a8;
+    font-weight: 700;
+}
+.star-card-max {
+    padding: 6px 12px;
+    background: rgba(68, 255, 68, 0.15);
+    border: 1px solid rgba(68, 255, 68, 0.3);
+    border-radius: 8px;
+    color: #44ff44;
+    font-size: 10px;
+    font-weight: 800;
+}
+.star-upgrade-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: linear-gradient(135deg, #ffcc66, #ff9966);
+    border: 0;
+    border-radius: 8px;
+    color: #2a1a05;
+    font-size: 12px;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+}
+.star-upgrade-btn:hover:not(.disabled) { transform: translateY(-1px); }
+.star-upgrade-btn.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+    background: linear-gradient(135deg, #6b7084, #4a4f5e);
+}
+
+/* ============================================================
+   ДОСТИЖЕНИЯ
+   ============================================================ */
+.ach-grid {
+    padding: 8px 12px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ach-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(107, 112, 132, 0.2);
+    border-radius: 12px;
+    opacity: 0.5;
+    transition: all 0.2s;
+}
+
+.ach-card.unlocked {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(255, 204, 102, 0.1), rgba(255, 153, 102, 0.05));
+    border-color: rgba(255, 204, 102, 0.4);
+    box-shadow: 0 0 15px rgba(255, 204, 102, 0.2);
+}
+
+.ach-icon {
+    font-size: 32px;
+    line-height: 1;
+    width: 44px;
+    text-align: center;
+    flex-shrink: 0;
+}
+.ach-info { flex: 1; min-width: 0; }
+.ach-name {
+    font-size: 14px; font-weight: 800; color: #e8e8f0;
+    margin-bottom: 2px;
+}
+.ach-desc { font-size: 11px; color: #8b90a8; }
+.ach-reward {
+    font-size: 12px; font-weight: 800; color: #ffcc66;
+    white-space: nowrap; flex-shrink: 0;
+}
+
+/* TOAST ДОСТИЖЕНИЯ */
+.ach-toast {
+    position: fixed;
+    top: calc(20px + env(safe-area-inset-top));
+    left: 50%;
+    transform: translateX(-50%) translateY(-120%);
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    background: linear-gradient(135deg, #ffcc66, #ff9966);
+    border-radius: 14px;
+    box-shadow: 0 12px 40px rgba(255, 204, 102, 0.6);
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 90vw;
+    pointer-events: none;
+}
+.ach-toast.show { transform: translateX(-50%) translateY(0); }
+.ach-toast-icon { font-size: 32px; flex-shrink: 0; }
+.ach-toast-info { min-width: 0; }
+.ach-toast-title {
+    font-size: 10px; font-weight: 900;
+    color: rgba(42, 26, 5, 0.7);
+    text-transform: uppercase; letter-spacing: 1px;
+}
+.ach-toast-name { font-size: 15px; font-weight: 900; color: #2a1a05; }
+.ach-toast-desc {
+    font-size: 11px; font-weight: 700;
+    color: rgba(42, 26, 5, 0.85);
+}
+
+/* ============================================================
    ТОП
    ============================================================ */
 .top-container { flex: 1; padding-bottom: 80px; }
@@ -904,7 +1059,9 @@ input:focus { border-color: #b388ff; }
     text-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
 }
 
-/* БОНУС */
+/* ============================================================
+   БОНУС
+   ============================================================ */
 .bonus-btn {
     width: 38px; height: 38px;
     display: flex; align-items: center; justify-content: center;
@@ -1027,7 +1184,9 @@ input:focus { border-color: #b388ff; }
     position: absolute; top: 4px; right: 4px; font-size: 12px;
 }
 
-/* ПРОФИЛЬ */
+/* ============================================================
+   ПРОФИЛЬ
+   ============================================================ */
 .profile-card {
     margin: 12px 14px;
     padding: 24px;
@@ -1089,7 +1248,9 @@ input:focus { border-color: #b388ff; }
 }
 .profile-action-btn:hover { background: rgba(179, 136, 255, 0.2); }
 
-/* НАСТРОЙКИ */
+/* ============================================================
+   НАСТРОЙКИ
+   ============================================================ */
 .settings-list {
     padding: 0 14px;
     display: flex;
@@ -1163,7 +1324,9 @@ input:focus { border-color: #b388ff; }
     line-height: 1.6;
 }
 
-/* БУРГЕР */
+/* ============================================================
+   БУРГЕР
+   ============================================================ */
 .burger-btn {
     width: 38px; height: 38px;
     display: flex;
@@ -1329,7 +1492,9 @@ input:focus { border-color: #b388ff; }
 }
 .sidebar-logout:hover { background: rgba(255, 92, 122, 0.2); }
 
-/* ПИКЕР КАРТ */
+/* ============================================================
+   ПИКЕР КАРТ
+   ============================================================ */
 .picker-overlay {
     position: fixed; inset: 0;
     z-index: 300;
@@ -1417,7 +1582,9 @@ input:focus { border-color: #b388ff; }
     color: #6b7084;
 }
 
-/* ОВЕРЛЕЙ ПАКА */
+/* ============================================================
+   ОВЕРЛЕЙ ПАКА
+   ============================================================ */
 .pack-overlay {
     position: fixed; inset: 0;
     z-index: 200;
@@ -1501,7 +1668,9 @@ input:focus { border-color: #b388ff; }
     animation: cardReveal 0.4s ease;
 }
 
-/* ОВЕРЛЕЙ СЛИЯНИЯ */
+/* ============================================================
+   ОВЕРЛЕЙ СЛИЯНИЯ
+   ============================================================ */
 .merge-overlay {
     position: fixed; inset: 0;
     z-index: 250;
@@ -1587,7 +1756,9 @@ input:focus { border-color: #b388ff; }
     box-shadow: 0 8px 24px rgba(74, 212, 255, 0.5);
 }
 
-/* ОВЕРЛЕЙ УРОВНЯ */
+/* ============================================================
+   ОВЕРЛЕЙ УРОВНЯ
+   ============================================================ */
 .levelup-overlay {
     position: fixed; inset: 0;
     z-index: 250;
@@ -1650,7 +1821,9 @@ input:focus { border-color: #b388ff; }
     box-shadow: 0 8px 24px rgba(123, 77, 255, 0.5);
 }
 
-/* ОВЕРЛЕЙ БОНУСА */
+/* ============================================================
+   ОВЕРЛЕЙ БОНУСА
+   ============================================================ */
 .bonus-overlay {
     position: fixed; inset: 0;
     z-index: 250;
@@ -1734,7 +1907,82 @@ input:focus { border-color: #b388ff; }
     box-shadow: 0 8px 24px rgba(255, 204, 102, 0.5);
 }
 
-/* ОВЕРЛЕЙ ДЕРЕВА */
+/* ============================================================
+   ОФЛАЙН-ДОХОД
+   ============================================================ */
+.offline-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 300;
+    background: radial-gradient(circle at center, rgba(74, 212, 255, 0.2), rgba(5, 3, 12, 0.95) 70%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    animation: fadeIn 0.3s ease;
+}
+.offline-content {
+    width: 100%;
+    max-width: 340px;
+    padding: 32px 24px;
+    background: linear-gradient(160deg, #1a2540, #0f0a1f);
+    border: 2px solid #4ad4ff;
+    border-radius: 20px;
+    box-shadow: 0 0 60px rgba(74, 212, 255, 0.5);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.offline-icon {
+    font-size: 64px;
+    line-height: 1;
+    animation: float 3s ease-in-out infinite;
+}
+.offline-title {
+    font-size: 14px;
+    font-weight: 900;
+    color: #4ad4ff;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+.offline-time {
+    font-size: 14px;
+    color: #8b90a8;
+    font-weight: 700;
+}
+.offline-earned {
+    font-size: 36px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #4ad4ff, #b388ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    line-height: 1;
+}
+.offline-rate {
+    font-size: 11px;
+    color: #6b7084;
+}
+.offline-close {
+    margin-top: 10px;
+    padding: 12px 36px;
+    background: linear-gradient(135deg, #4ad4ff, #7b4dff);
+    border: 0;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 900;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 8px 24px rgba(74, 212, 255, 0.5);
+}
+
+/* ============================================================
+   ОВЕРЛЕЙ ДЕРЕВА
+   ============================================================ */
 .tree-overlay {
     position: fixed;
     inset: 0;
@@ -1996,7 +2244,9 @@ input:focus { border-color: #b388ff; }
     box-shadow: 0 6px 20px rgba(123, 77, 255, 0.4);
 }
 
-/* ЛЕТЯЩИЕ ЦИФРЫ И ЧАСТИЦЫ */
+/* ============================================================
+   ЛЕТЯЩИЕ ЦИФРЫ И ЧАСТИЦЫ
+   ============================================================ */
 .float-layer {
     position: fixed; inset: 0;
     pointer-events: none;
@@ -2034,7 +2284,9 @@ input:focus { border-color: #b388ff; }
     }
 }
 
-/* МОБИЛКА */
+/* ============================================================
+   МОБИЛКА
+   ============================================================ */
 @media (max-width: 480px) {
     .crystal { width: 170px; height: 170px; }
     .crystal-core { font-size: 110px; }
@@ -2061,4 +2313,293 @@ input:focus { border-color: #b388ff; }
     .playground { min-height: 220px; padding: 14px; }
     .crystal { width: 150px; height: 150px; }
     .crystal-core { font-size: 100px; }
+}
+
+/* ============================================================
+   УНИКАЛЬНЫЕ ЭФФЕКТЫ ПО TIER
+   ============================================================ */
+
+/* Общая база для всех карт */
+.collection-emoji,
+.inventory-emoji,
+.pack-card-emoji,
+.star-card-emoji,
+.picker-card-emoji,
+.tree-card-emoji {
+    display: inline-block;
+    transform-origin: center;
+    will-change: transform, filter;
+}
+
+/* ============ TIER 0 — Базовая: статика, слабое свечение ============ */
+.tier-0 .collection-emoji,
+.tier-0 .inventory-emoji,
+.tier-0 .pack-card-emoji,
+.tier-0 .star-card-emoji,
+.tier-0 .picker-card-emoji,
+.tier-0 .tree-card-emoji {
+    filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.2));
+}
+
+/* ============ TIER 1 — Простая: дыхание ============ */
+.tier-1 .collection-emoji,
+.tier-1 .inventory-emoji,
+.tier-1 .pack-card-emoji,
+.tier-1 .star-card-emoji,
+.tier-1 .picker-card-emoji,
+.tier-1 .tree-card-emoji {
+    animation: tierBreathe 3s ease-in-out infinite;
+    filter: drop-shadow(0 0 5px rgba(74, 212, 255, 0.4));
+}
+
+@keyframes tierBreathe {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.08); }
+}
+
+/* ============ TIER 2 — Обычная: пульсация свечения ============ */
+.tier-2 .collection-emoji,
+.tier-2 .inventory-emoji,
+.tier-2 .pack-card-emoji,
+.tier-2 .star-card-emoji,
+.tier-2 .picker-card-emoji,
+.tier-2 .tree-card-emoji {
+    animation: tierPulse 2s ease-in-out infinite;
+}
+
+@keyframes tierPulse {
+    0%, 100% {
+        filter: drop-shadow(0 0 4px rgba(68, 255, 136, 0.5));
+        transform: scale(1);
+    }
+    50% {
+        filter: drop-shadow(0 0 12px rgba(68, 255, 136, 0.9));
+        transform: scale(1.05);
+    }
+}
+
+/* ============ TIER 3 — Необычная: лёгкое вращение ============ */
+.tier-3 .collection-emoji,
+.tier-3 .inventory-emoji,
+.tier-3 .pack-card-emoji,
+.tier-3 .star-card-emoji,
+.tier-3 .picker-card-emoji,
+.tier-3 .tree-card-emoji {
+    animation: tierSpin 4s linear infinite;
+    filter: drop-shadow(0 0 6px rgba(34, 197, 94, 0.6));
+}
+
+@keyframes tierSpin {
+    0% { transform: rotate(-8deg); }
+    50% { transform: rotate(8deg); }
+    100% { transform: rotate(-8deg); }
+}
+
+/* ============ TIER 4 — Редкая: парение + свечение ============ */
+.tier-4 .collection-emoji,
+.tier-4 .inventory-emoji,
+.tier-4 .pack-card-emoji,
+.tier-4 .star-card-emoji,
+.tier-4 .picker-card-emoji,
+.tier-4 .tree-card-emoji {
+    animation: tierFloat 2.5s ease-in-out infinite;
+    filter: drop-shadow(0 0 8px rgba(179, 136, 255, 0.7))
+            drop-shadow(0 0 16px rgba(179, 136, 255, 0.4));
+}
+
+@keyframes tierFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0);
+    }
+    50% {
+        transform: translateY(-4px) rotate(3deg);
+    }
+}
+
+/* ============ TIER 5 — Эпическая: волна ============ */
+.tier-5 .collection-emoji,
+.tier-5 .inventory-emoji,
+.tier-5 .pack-card-emoji,
+.tier-5 .star-card-emoji,
+.tier-5 .picker-card-emoji,
+.tier-5 .tree-card-emoji {
+    animation: tierWave 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 10px rgba(255, 102, 136, 0.8))
+            drop-shadow(0 0 20px rgba(255, 102, 136, 0.5));
+}
+
+@keyframes tierWave {
+    0%, 100% {
+        transform: translateX(-2px) rotate(-4deg);
+    }
+    50% {
+        transform: translateX(2px) rotate(4deg);
+    }
+}
+
+/* ============ TIER 6 — Мифическая: вспышки ============ */
+.tier-6 .collection-emoji,
+.tier-6 .inventory-emoji,
+.tier-6 .pack-card-emoji,
+.tier-6 .star-card-emoji,
+.tier-6 .picker-card-emoji,
+.tier-6 .tree-card-emoji {
+    animation: tierFlash 1.5s ease-in-out infinite;
+}
+
+@keyframes tierFlash {
+    0%, 100% {
+        filter: drop-shadow(0 0 6px rgba(255, 204, 102, 0.6));
+        transform: scale(1);
+    }
+    30% {
+        filter: drop-shadow(0 0 20px rgba(255, 204, 102, 1))
+                drop-shadow(0 0 30px rgba(255, 204, 102, 0.6));
+        transform: scale(1.12);
+    }
+    60% {
+        filter: drop-shadow(0 0 10px rgba(255, 204, 102, 0.8));
+        transform: scale(1);
+    }
+}
+
+/* ============ TIER 7 — Божественная: орбита + свечение ============ */
+.tier-7 .collection-emoji,
+.tier-7 .inventory-emoji,
+.tier-7 .pack-card-emoji,
+.tier-7 .star-card-emoji,
+.tier-7 .picker-card-emoji,
+.tier-7 .tree-card-emoji {
+    animation: tierOrbit 3s ease-in-out infinite;
+}
+
+@keyframes tierOrbit {
+    0% {
+        transform: translateY(0) rotate(0) scale(1);
+        filter: drop-shadow(0 0 10px rgba(255, 153, 51, 0.8));
+    }
+    25% {
+        transform: translateY(-3px) rotate(-10deg) scale(1.05);
+        filter: drop-shadow(0 0 16px rgba(255, 153, 51, 1));
+    }
+    50% {
+        transform: translateY(0) rotate(0) scale(1.1);
+        filter: drop-shadow(0 0 22px rgba(255, 153, 51, 1))
+                drop-shadow(0 0 30px rgba(255, 153, 51, 0.6));
+    }
+    75% {
+        transform: translateY(3px) rotate(10deg) scale(1.05);
+        filter: drop-shadow(0 0 16px rgba(255, 153, 51, 1));
+    }
+    100% {
+        transform: translateY(0) rotate(0) scale(1);
+        filter: drop-shadow(0 0 10px rgba(255, 153, 51, 0.8));
+    }
+}
+
+/* ============ TIER 8 — Абсолютная: радуга + пульс ============ */
+.tier-8 .collection-emoji,
+.tier-8 .inventory-emoji,
+.tier-8 .pack-card-emoji,
+.tier-8 .star-card-emoji,
+.tier-8 .picker-card-emoji,
+.tier-8 .tree-card-emoji {
+    animation: tierAbsolute 3s ease-in-out infinite;
+}
+
+@keyframes tierAbsolute {
+    0% {
+        transform: scale(1) rotate(0);
+        filter: drop-shadow(0 0 12px #ff3366)
+                drop-shadow(0 0 24px #b388ff);
+    }
+    25% {
+        transform: scale(1.08) rotate(5deg);
+        filter: drop-shadow(0 0 16px #4ad4ff)
+                drop-shadow(0 0 30px #44ff88);
+    }
+    50% {
+        transform: scale(1.15) rotate(0);
+        filter: drop-shadow(0 0 24px #ffcc66)
+                drop-shadow(0 0 40px #ff9933);
+    }
+    75% {
+        transform: scale(1.08) rotate(-5deg);
+        filter: drop-shadow(0 0 16px #b388ff)
+                drop-shadow(0 0 30px #ff3366);
+    }
+    100% {
+        transform: scale(1) rotate(0);
+        filter: drop-shadow(0 0 12px #ff3366)
+                drop-shadow(0 0 24px #b388ff);
+    }
+}
+
+/* ============ КАРТА АБСОЛЮТА (Философский камень) — особый фон ============ */
+.collection-card.tier-8,
+.star-card.tier-8,
+.tree-card.tier-8 {
+    position: relative;
+    background: linear-gradient(135deg,
+        rgba(255, 51, 102, 0.15),
+        rgba(179, 136, 255, 0.15),
+        rgba(74, 212, 255, 0.15));
+    background-size: 200% 200%;
+    animation: tier8BgShift 6s ease infinite;
+}
+
+@keyframes tier8BgShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+/* ============ АУРА ВОКРУГ КАРТЫ (для tier 4+) ============ */
+.collection-card.tier-4,
+.star-card.tier-4 {
+    box-shadow: 0 0 15px rgba(179, 136, 255, 0.4);
+}
+.collection-card.tier-5,
+.star-card.tier-5 {
+    box-shadow: 0 0 18px rgba(255, 102, 136, 0.5);
+}
+.collection-card.tier-6,
+.star-card.tier-6 {
+    box-shadow: 0 0 20px rgba(255, 204, 102, 0.6);
+    animation: cardGlow6 2s ease-in-out infinite;
+}
+@keyframes cardGlow6 {
+    0%, 100% { box-shadow: 0 0 20px rgba(255, 204, 102, 0.4); }
+    50% { box-shadow: 0 0 30px rgba(255, 204, 102, 0.8); }
+}
+
+.collection-card.tier-7,
+.star-card.tier-7 {
+    box-shadow: 0 0 22px rgba(255, 153, 51, 0.7);
+    animation: cardGlow7 2.5s ease-in-out infinite;
+}
+@keyframes cardGlow7 {
+    0%, 100% {
+        box-shadow: 0 0 22px rgba(255, 153, 51, 0.5);
+        transform: translateY(0);
+    }
+    50% {
+        box-shadow: 0 0 35px rgba(255, 153, 51, 1);
+        transform: translateY(-2px);
+    }
+}
+
+.collection-card.tier-8,
+.star-card.tier-8 {
+    box-shadow: 0 0 25px rgba(255, 51, 102, 0.6);
+    animation: cardGlow8 3s ease-in-out infinite;
+}
+@keyframes cardGlow8 {
+    0%, 100% {
+        box-shadow: 0 0 25px rgba(255, 51, 102, 0.5),
+                    0 0 50px rgba(179, 136, 255, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(255, 51, 102, 0.9),
+                    0 0 80px rgba(179, 136, 255, 0.6);
+    }
 }

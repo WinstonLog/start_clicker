@@ -104,6 +104,7 @@ function ensureData() {
     if (typeof d.streak !== 'number') d.streak = 0;
     if (typeof d.lastBonusDate !== 'string') d.lastBonusDate = '';
     if (typeof d.merges !== 'number') d.merges = 0;
+    if (typeof d.lastSeen !== 'number') d.lastSeen = Date.now();
 
     if (!d.upg) d.upg = { clickPower: 0, auto: 0, crit: 0 };
     if (typeof d.upg.clickPower !== 'number') d.upg.clickPower = 0;
@@ -111,8 +112,10 @@ function ensureData() {
     if (typeof d.upg.crit !== 'number') d.upg.crit = 0;
 
     if (!d.inventory) d.inventory = {};
+    if (!d.stars) d.stars = {};
     if (!Array.isArray(d.seen)) d.seen = [];
     if (!Array.isArray(d.discovered)) d.discovered = [];
+    if (!Array.isArray(d.achievements)) d.achievements = [];
 }
 
 const RATING = {
@@ -162,7 +165,8 @@ const UPGRADES = [
 function totalMultiplier() {
     const lvlBonus = typeof levelBonus === 'function' ? levelBonus() : 0;
     const strBonus = typeof streakBonus === 'function' ? streakBonus() : 0;
-    return 1 + (lvlBonus + strBonus) / 100;
+    const starBonus = typeof starsBonus === 'function' ? starsBonus() : 0;
+    return 1 + (lvlBonus + strBonus + starBonus) / 100;
 }
 
 function goldPerClick() {
@@ -191,6 +195,8 @@ function buyUpgrade(id) {
     d.gold -= price;
     d.upg[id] += 1;
     upg.apply(d);
+
+    d.upgradesBought = (d.upgradesBought || 0) + 1;
 
     addRating(RATING.upgrade * (lvl + 1));
     addXp(5 * (lvl + 1));
@@ -318,7 +324,8 @@ function updateUI() {
     const bonusEl = $('uiBonus');
     if (bonusEl) {
         const totalBonus = (typeof levelBonus === 'function' ? levelBonus() : 0) +
-                          (typeof streakBonus === 'function' ? streakBonus() : 0);
+                          (typeof streakBonus === 'function' ? streakBonus() : 0) +
+                          (typeof starsBonus === 'function' ? starsBonus() : 0);
         bonusEl.textContent = '+' + totalBonus + '%';
     }
 
@@ -326,6 +333,7 @@ function updateUI() {
     if (typeof updatePackButton === 'function') updatePackButton();
     if (typeof updateSidebar === 'function') updateSidebar();
     if (typeof updateBonusButton === 'function') updateBonusButton();
+    if (typeof checkAchievements === 'function') checkAchievements();
 
     const lvlEl = document.getElementById('sidebarLevel');
     if (lvlEl) lvlEl.textContent = d.level || 1;
@@ -345,16 +353,13 @@ function bindCrystal() {
     if (!c || c.dataset.bound) return;
     c.dataset.bound = '1';
 
-    // Используем pointerdown — работает и для тача, и для мыши
     let lastTouch = 0;
 
     c.addEventListener('pointerdown', (e) => {
-        // Защита от дублей на мобилке
         if (e.pointerType === 'touch') {
             lastTouch = Date.now();
             doClick(e.clientX, e.clientY);
         } else if (e.pointerType === 'mouse') {
-            // Игнорим mouse, если только что был touch
             if (Date.now() - lastTouch < 400) return;
             doClick(e.clientX, e.clientY);
         }
@@ -578,6 +583,9 @@ function resetProgress() {
 function onReady() {
     ensureData();
 
+    // Офлайн-доход
+    if (typeof applyOfflineIncome === 'function') applyOfflineIncome();
+
     if (typeof checkStreak === 'function') checkStreak();
 
     UPGRADES.forEach(u => u.apply(state.data));
@@ -589,13 +597,18 @@ function onReady() {
     renderInventory();
     renderCollection();
     renderJournal();
+    renderStars();
+    renderAchievements();
     updateXpUI();
     updateSidebar();
     updateBonusButton();
     renderBonusTable();
 
-    // Проверка целостности дерева (в консоли)
     if (typeof validateTree === 'function') validateTree();
+
+    setInterval(() => {
+        if (typeof trackActivity === 'function') trackActivity();
+    }, 30000);
 }
 
 window.buyUpgrade = buyUpgrade;

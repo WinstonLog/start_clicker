@@ -183,6 +183,18 @@
             <div id="inventoryContainer" class="inventory-grid"></div>
         </section>
 
+        <!-- ПРОКАЧКА КАРТ -->
+        <section class="view" data-view="stars">
+            <h2 id="starsHeader" class="collection-header">⭐ Прокачка карт (+0% к добыче)</h2>
+            <div id="starsContainer" class="stars-grid"></div>
+        </section>
+
+        <!-- ДОСТИЖЕНИЯ -->
+        <section class="view" data-view="achievements">
+            <h2 id="achievementsHeader" class="collection-header">🏅 Достижения (0 / 0)</h2>
+            <div id="achievementsContainer" class="ach-grid"></div>
+        </section>
+
         <!-- ТОП -->
         <section class="view" data-view="top">
             <h2 class="collection-header">
@@ -341,6 +353,14 @@
             <span class="sidebar-icon">📖</span>
             <span>Коллекция</span>
         </button>
+        <button class="sidebar-item" data-view="stars" onclick="switchTab('stars')">
+            <span class="sidebar-icon">⭐</span>
+            <span>Прокачка карт</span>
+        </button>
+        <button class="sidebar-item" data-view="achievements" onclick="switchTab('achievements')">
+            <span class="sidebar-icon">🏅</span>
+            <span>Достижения</span>
+        </button>
         <button class="sidebar-item" data-view="top" onclick="switchTab('top')">
             <span class="sidebar-icon">🏆</span>
             <span>Топ игроков</span>
@@ -453,6 +473,9 @@
 <script src="js/sound.js"></script>
 <script src="js/cards.js"></script>
 <script src="js/alchemy.js"></script>
+<script src="js/stars.js"></script>
+<script src="js/achievements.js"></script>
+<script src="js/offline.js"></script>
 <script src="js/packs.js"></script>
 <script src="js/top.js"></script>
 <script src="js/levels.js"></script>
