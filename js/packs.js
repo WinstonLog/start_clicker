@@ -1,18 +1,32 @@
 // ============================================================
-// ПАК — один базовый
+// ПАК — динамическая цена
 // ============================================================
 
-const PACK_PRICE = 100;
+const PACK_BASE_PRICE = 100;
+
+// Цена пака = базовая × множитель уровня × множитель открытых паков
+// Применяется сразу ко всем — старым и новым игрокам
+function packPrice() {
+    const d = state.data || {};
+    const lvl = Math.min(d.level || 1, 50);            // кап на 50 ур.
+    const opened = Math.min(d.packsOpened || 0, 300);  // кап на 300 паках
+
+    const lvlMult  = Math.pow(1.11, lvl - 1);
+    const openMult = Math.pow(1.03, opened);
+
+    return Math.floor(PACK_BASE_PRICE * lvlMult * openMult);
+}
 
 async function openPack() {
     const d = state.data;
+    const price = packPrice();
 
-    if (d.gold < PACK_PRICE) {
+    if (d.gold < price) {
         spawnFloat('Не хватает!', window.innerWidth / 2, window.innerHeight / 2, '#ff5c7a', 20);
         return;
     }
 
-    d.gold -= PACK_PRICE;
+    d.gold -= price;
 
     const cardId = rollBaseCard();
     const card = getCard(cardId);
@@ -35,6 +49,7 @@ async function openPack() {
     saveNow(true);
     updateUI();
     renderUpgrades();
+    updatePackButton();
 
     showPackOpening([cardId]);
 }
@@ -48,8 +63,8 @@ function showPackOpening(cards) {
     container.innerHTML = '';
 
     cards.forEach((cardId, i) => {
-        const card = getCard(cardId);              
-        const tier = getTierInfo(card.tier);       
+        const card = getCard(cardId);
+        const tier = getTierInfo(card.tier);
 
         const el = document.createElement('div');
         el.className = `pack-card`;
@@ -143,10 +158,13 @@ function updatePackButton() {
     const btn = document.getElementById('openPackBtn');
     if (!btn) return;
 
-    const d = state.data;
-    const canBuy = d.gold >= PACK_PRICE;
+    const price = packPrice();
+    const canBuy = (state.data?.gold || 0) >= price;
 
     btn.disabled = !canBuy;
+
+    const priceEl = document.getElementById('packPrice');
+    if (priceEl) priceEl.textContent = formatNum(price);
 }
 
 function switchTab(tab) {
@@ -189,7 +207,8 @@ function shakeElement(id) {
     setTimeout(() => el.style.transform = '', 120);
 }
 
-window.PACK_PRICE = PACK_PRICE;
+window.packPrice = packPrice;
 window.openPack = openPack;
 window.switchTab = switchTab;
 window.closePackOverlay = closePackOverlay;
+window.updatePackButton = updatePackButton;

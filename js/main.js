@@ -435,6 +435,7 @@ setInterval(() => {
         state.data.totalGold += inc;
         updateUI();
         renderUpgrades();
+        updatePackButton();
     }
 }, 1000);
 
