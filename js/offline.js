@@ -7,71 +7,102 @@
 const OFFLINE_RATE = 0.4;       // 40% от автодобычи
 const OFFLINE_MAX_HOURS = 8;    // максимум 8 часов
 
-function calculateOfflineIncome() {
-    const d = state.data;
-    if (!d.lastSeen) {
-        d.lastSeen = Date.now();
-        return 0;
+// ============================================================
+// ГАРАНТИРОВАННОЕ СОХРАНЕНИЕ lastSeen
+// ============================================================
+// Синхронный XHR — блокирует UI на ~100-500мс, но ГАРАНТИРУЕТ
+// что данные долетели до Supabase даже при мгновенной перезагрузке
+function forceSaveLastSeen() {
+    if (!state.playerId || !state.token) return;
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', `${SUPABASE_URL}/rest/v1/rpc/save_data`, false); // false = синхронно
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('apikey', SUPABASE_KEY);
+        xhr.setRequestHeader('Authorization', `Bearer ${SUPABASE_KEY}`);
+        xhr.send(JSON.stringify({
+            p_player_id: state.playerId,
+            p_hash: state.token,
+            p_data: state.data
+        }));
+    } catch (e) {
+        console.warn('forceSaveLastSeen failed:', e);
     }
-
-    const now = Date.now();
-    const diff = now - d.lastSeen;
-    const hours = Math.min(diff / (1000 * 60 * 60), OFFLINE_MAX_HOURS);
-
-    // Если меньше минуты — ничего
-    if (diff < 60000) return 0;
-
-    // Считаем сколько бы накопилось
-    const perSec = (typeof goldPerSec === 'function') ? goldPerSec() : 0;
-    if (perSec <= 0) return 0;
-
-    const earned = Math.floor(perSec * OFFLINE_RATE * hours * 3600);
-
-    return {
-        earned,
-        hours: Math.floor(hours),
-        minutes: Math.floor((hours * 60) % 60)
-    };
 }
 
+// ============================================================
+// ПРИМЕНЕНИЕ ОФЛАЙН-ДОХОДА
+// ============================================================
 function applyOfflineIncome() {
-    const result = calculateOfflineIncome();
-    if (!result || result.earned <= 0) return;
-
     const d = state.data;
-    d.gold += result.earned;
-    d.totalGold += result.earned;
+    if (!d) return;
+
+    const now = Date.now();
+    const lastSeen = d.lastSeen || now;
+    const diff = now - lastSeen;
+
+    // 🛡️ ЗАЩИТА #1: обновляем lastSeen СРАЗУ — до всего остального
+    // Если игрок перезагрузит страницу — в памяти уже новый
+    d.lastSeen = now;
+
+    // 🛡️ ЗАЩИТА #2: sessionStorage — не даём награду дважды за 60 сек
+    // Даже если lastSeen не долетел до БД
+    const sessionKey = 'offline_claimed_at_' + (state.playerId || 'guest');
+    const claimedAt = parseInt(sessionStorage.getItem(sessionKey) || '0');
+    const secondsSinceClaim = (now - claimedAt) / 1000;
+
+    if (secondsSinceClaim < 60) {
+        // Уже давали награду меньше минуты назад — пропускаем
+        // Но lastSeen всё равно сохраняем
+        saveNow(true);
+        return;
+    }
+
+    // Если меньше минуты офлайна — не начисляем
+    if (diff < 60000) {
+        saveNow(true);
+        return;
+    }
+
+    const perSec = (typeof goldPerSec === 'function') ? goldPerSec() : 0;
+    if (perSec <= 0) {
+        saveNow(true);
+        return;
+    }
+
+    const hours = Math.min(diff / (1000 * 60 * 60), OFFLINE_MAX_HOURS);
+    const earned = Math.floor(perSec * OFFLINE_RATE * hours * 3600);
+
+    if (earned <= 0) {
+        saveNow(true);
+        return;
+    }
+
+    // 🛡️ ЗАЩИТА #3: ставим метку СРАЗУ, до начисления
+    sessionStorage.setItem(sessionKey, String(now));
+
+    // Начисляем
+    d.gold += earned;
+    d.totalGold += earned;
+
+    // 🛡️ ЗАЩИТА #4: двойное сохранение
+    // Обычное (асинхронное) + синхронное (гарантированное)
+    saveNow(true);
+    forceSaveLastSeen();
 
     // Показываем модалку
-    showOfflineModal(result.earned, result.hours, result.minutes);
-
-    saveNow(true);
+    showOfflineModal(earned, Math.floor(hours), Math.floor((hours * 60) % 60));
     updateUI();
 }
 
+// ============================================================
+// МОДАЛКА (одна, не две!)
+// ============================================================
 function showOfflineModal(earned, hours, minutes) {
-    const overlay = document.createElement('div');
-    overlay.className = 'offline-overlay';
-    overlay.innerHTML = `
-        <div class="offline-content">
-            <div class="offline-icon">💤</div>
-            <div class="offline-title">Пока тебя не было...</div>
-            <div class="offline-time">
-                ${hours > 0 ? hours + ' ч ' : ''}${minutes} мин
-            </div>
-            <div class="offline-earned">
-                +${formatNum(earned)} 💠
-            </div>
-            <div class="offline-rate">Автодобыча работала на 40%</div>
-            <button class="offline-close" onclick="closeOfflineModal()">Забрать</button>
-        </div>
-    `;
-    overlay.id = 'offlineOverlay';
-    overlay.onclick = (e) => { if (e.target === overlay) closeOfflineModal(); };
-    document.body.appendChild(overlay);
-}
+    // Если уже показана — не дублируем
+    if (document.getElementById('offlineOverlay')) return;
 
-function showOfflineModal(earned, hours, minutes) {
     const overlay = document.createElement('div');
     overlay.className = 'offline-overlay';
     overlay.innerHTML = `
@@ -101,15 +132,20 @@ function closeOfflineModal() {
     if (el) el.remove();
 }
 
-// Обновляем lastSeen каждые 30 секунд пока игрок онлайн
+// ============================================================
+// ТРЕКИНГ АКТИВНОСТИ (каждые 30 сек из main.js)
+// ============================================================
 function trackActivity() {
     if (state.data) {
         state.data.lastSeen = Date.now();
     }
 }
 
-window.calculateOfflineIncome = calculateOfflineIncome;
+// ============================================================
+// ЭКСПОРТ
+// ============================================================
 window.applyOfflineIncome = applyOfflineIncome;
 window.showOfflineModal = showOfflineModal;
 window.closeOfflineModal = closeOfflineModal;
 window.trackActivity = trackActivity;
+window.forceSaveLastSeen = forceSaveLastSeen;
