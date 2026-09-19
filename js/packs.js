@@ -99,7 +99,7 @@ function revealCard(cardId, index) {
     el.style.setProperty('--tier-color', tier.color);
     el.style.setProperty('--tier-glow', tier.glow);
     el.innerHTML = `
-        <div class="pack-card-emoji">${card.emoji}</div>
+        <div class="scene">${renderCardArt(cardId)}</div>
         <div class="pack-card-name">${card.name}</div>
         <div class="pack-card-rarity" style="color:${tier.color}">${tier.name}</div>
     `;

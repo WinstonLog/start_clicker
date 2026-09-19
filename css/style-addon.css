@@ -1,0 +1,78 @@
+/* ============================================================
+   ЭМОДЗИ-КОМБО КАРТЫ
+   ============================================================ */
+
+.scene {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.emo {
+    font-size: 48px;
+    line-height: 1;
+    filter: drop-shadow(0 0 8px var(--tier-glow, rgba(179,136,255,0.6)))
+            drop-shadow(0 0 16px var(--tier-glow, rgba(179,136,255,0.4)));
+    position: relative;
+    z-index: 10;
+    animation: baseBreath 3s ease-in-out infinite;
+}
+
+@keyframes baseBreath {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+}
+
+.over {
+    position: absolute;
+    line-height: 1;
+    z-index: 5;
+    pointer-events: none;
+    opacity: 0.95;
+    filter: drop-shadow(0 0 6px var(--tier-glow, rgba(179,136,255,0.6)));
+}
+
+/* Позиции ВНУТРИ карточки (положительные %) */
+.o-tl { top: 4%;  left: 4%; }
+.o-tr { top: 4%;  right: 4%; }
+.o-bl { bottom: 4%; left: 4%; }
+.o-br { bottom: 4%; right: 4%; }
+.o-t  { top: 0%;  left: 50%; transform: translateX(-50%); }
+.o-b  { bottom: 0%; left: 50%; transform: translateX(-50%); }
+.o-l  { top: 50%; left: 0%; transform: translateY(-50%); }
+.o-r  { top: 50%; right: 0%; transform: translateY(-50%); }
+.o-c  { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+
+.a-float   { animation: floatY 2.5s ease-in-out infinite; }
+.a-bob     { animation: floatY 2s ease-in-out infinite; }
+.a-twinkle { animation: twinkle 1.5s ease-in-out infinite; }
+.a-spin    { animation: spinSlow 6s linear infinite; }
+.a-pulse   { animation: pulseScale 1.8s ease-in-out infinite; }
+.a-rise    { animation: rise 3s ease-in-out infinite; }
+
+@keyframes floatY {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); }
+}
+@keyframes twinkle {
+    0%, 100% { opacity: 0.4; transform: scale(0.9); }
+    50% { opacity: 1; transform: scale(1.15); }
+}
+@keyframes spinSlow {
+    from { transform: rotate(0); }
+    to   { transform: rotate(360deg); }
+}
+@keyframes pulseScale {
+    0%, 100% { transform: scale(1); opacity: 0.7; }
+    50% { transform: scale(1.3); opacity: 1; }
+}
+@keyframes rise {
+    0% { transform: translateY(0); opacity: 0; }
+    20% { opacity: 1; }
+    100% { transform: translateY(-12px); opacity: 0; }
+}
+

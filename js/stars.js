@@ -162,7 +162,7 @@ function renderStars() {
         return `
             <div class="star-card"
                  style="--tier-color:${tier.color}; --tier-glow:${tier.glow}">
-                <div class="star-card-emoji">${card.emoji}</div>
+                <div class="scene">${renderCardArt(id)}</div>
                 <div class="star-card-name">${card.name}</div>
                 <div class="star-card-stars">${starsHTML}</div>
                 <div class="star-card-count">В инвентаре: ${count}</div>

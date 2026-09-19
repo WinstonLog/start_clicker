@@ -48,7 +48,7 @@ function showUpdateModal(newVersion) {
 checkForUpdates();
 
 // И каждые 5 минут (если игрок долго сидит)
-setInterval(checkForUpdates, 10 * 1000); // каждые 10 сек
+setInterval(checkForUpdates, 5 * 60 * 1000);
 
 function hardReload() {
     // Пытаемся очистить кэш через Cache API
